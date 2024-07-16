@@ -1,0 +1,29 @@
+version: '3.1'
+
+volumes:
+  mysql-data:
+  db-init-volume:
+
+services:
+  mysql:
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "any password" # set the root password(Local Database)
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql-data:/var/lib/mysql # for save data in local
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql  # for mount init.sql file
+
+  app:
+    image: node:21.7.1 # set the node version
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+      - db-init-volume:/usr/src/app/db  # this volume is same as mysql container's path /usr/src/app/db
+
+    command: "npm run start:docker:local"
+    depends_on:
+      - mysql
+    ports:
+      - '3003:3003'
